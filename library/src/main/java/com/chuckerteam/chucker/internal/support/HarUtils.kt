@@ -1,7 +1,6 @@
 package com.chuckerteam.chucker.internal.support
 
 import androidx.annotation.VisibleForTesting
-import com.chuckerteam.chucker.BuildConfig
 import com.chuckerteam.chucker.internal.data.entity.HttpTransaction
 import com.chuckerteam.chucker.internal.data.har.Creator
 import com.chuckerteam.chucker.internal.data.har.Entry
@@ -24,8 +23,8 @@ internal object HarUtils {
             log = Log(
                 version = "1.2",
                 creator = Creator(
-                    name = BuildConfig.LIBRARY_PACKAGE_NAME,
-                    version = BuildConfig.VERSION_NAME
+                    name = "BuildConfig.LIBRARY_PACKAGE_NAME",
+                    version = "BuildConfig.VERSION_NAME"
                 ),
                 entries = transactions.map(Entry.Companion::fromHttpTransaction).filter { it.response != null }
             )

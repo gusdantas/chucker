@@ -2,11 +2,9 @@ package com.chuckerteam.chucker.api
 
 import android.content.Context
 import com.chuckerteam.chucker.internal.data.entity.HttpTransaction
-import com.chuckerteam.chucker.internal.data.entity.RecordedThrowable
 import com.chuckerteam.chucker.internal.data.repository.RepositoryProvider
 import com.chuckerteam.chucker.internal.support.NotificationHelper
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
 /**
@@ -20,37 +18,17 @@ import kotlinx.coroutines.launch
  * @param retentionPeriod Set the retention period for HTTP transaction data captured
  * by this collector. The default is one week.
  */
-class ChuckerCollector @JvmOverloads constructor(
+public class ChuckerCollector @JvmOverloads constructor(
     context: Context,
-    var showNotification: Boolean = true,
+    public var showNotification: Boolean = true,
     retentionPeriod: RetentionManager.Period = RetentionManager.Period.ONE_WEEK
 ) {
     private val retentionManager: RetentionManager = RetentionManager(context, retentionPeriod)
     private val notificationHelper: NotificationHelper = NotificationHelper(context)
+    private val scope = MainScope()
 
     init {
         RepositoryProvider.initialize(context)
-    }
-
-    /**
-     * Call this method when a throwable is triggered and you want to record it.
-     * @param tag A tag you choose
-     * @param throwable The triggered [Throwable]
-     */
-    @Deprecated(
-        "This fun will be removed in 4.x release as part of Throwable functionality removal.",
-        ReplaceWith(""),
-        DeprecationLevel.WARNING
-    )
-    fun onError(tag: String, throwable: Throwable) {
-        val recordedThrowable = RecordedThrowable(tag, throwable)
-        CoroutineScope(Dispatchers.IO).launch {
-            RepositoryProvider.throwable().saveThrowable(recordedThrowable)
-        }
-        if (showNotification) {
-            notificationHelper.show(recordedThrowable)
-        }
-        retentionManager.doMaintenance()
     }
 
     /**
@@ -58,13 +36,14 @@ class ChuckerCollector @JvmOverloads constructor(
      * @param transaction The HTTP transaction sent
      */
     internal fun onRequestSent(transaction: HttpTransaction) {
-        CoroutineScope(Dispatchers.IO).launch {
+        scope.launch {
             RepositoryProvider.transaction().insertTransaction(transaction)
+
+            if (showNotification) {
+                notificationHelper.show(transaction)
+            }
+            retentionManager.doMaintenance()
         }
-        if (showNotification) {
-            notificationHelper.show(transaction)
-        }
-        retentionManager.doMaintenance()
     }
 
     /**
@@ -73,9 +52,11 @@ class ChuckerCollector @JvmOverloads constructor(
      * @param transaction The sent HTTP transaction completed with the response
      */
     internal fun onResponseReceived(transaction: HttpTransaction) {
-        val updated = RepositoryProvider.transaction().updateTransaction(transaction)
-        if (showNotification && updated > 0) {
-            notificationHelper.show(transaction)
+        scope.launch {
+            val updated = RepositoryProvider.transaction().updateTransaction(transaction)
+            if (showNotification && updated > 0) {
+                notificationHelper.show(transaction)
+            }
         }
     }
 }

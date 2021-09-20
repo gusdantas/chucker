@@ -1,12 +1,13 @@
 package com.chuckerteam.chucker.internal.data.har
 
-import com.chuckerteam.chucker.TestTransactionFactory
+import com.chuckerteam.chucker.util.TestTransactionFactory
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.util.Date
 
 internal class EntryTest {
-    @Test fun fromHttpTransaction_createsEntryWithCorrectStartedDateTime() {
+    @Test
+    fun fromHttpTransaction_createsEntryWithCorrectStartedDateTime() {
         val transaction = TestTransactionFactory.createTransaction("GET")
         val entry = Entry.fromHttpTransaction(transaction)
 
@@ -14,14 +15,16 @@ internal class EntryTest {
         assertThat(entry.time).isEqualTo(1000)
     }
 
-    @Test fun fromHttpTransaction_createsEntryWithCorrectTime() {
+    @Test
+    fun fromHttpTransaction_createsEntryWithCorrectTime() {
         val transaction = TestTransactionFactory.createTransaction("GET")
         val entry = Entry.fromHttpTransaction(transaction)
 
         assertThat(entry.time).isEqualTo(1000)
     }
 
-    @Test fun fromHttpTransaction_createsEntryWithCorrectRequest() {
+    @Test
+    fun fromHttpTransaction_createsEntryWithCorrectRequest() {
         val transaction = TestTransactionFactory.createTransaction("GET")
         val entry = Entry.fromHttpTransaction(transaction)
 
@@ -40,7 +43,8 @@ internal class EntryTest {
         )
     }
 
-    @Test fun fromHttpTransaction_createsEntryWithCorrectResponse() {
+    @Test
+    fun fromHttpTransaction_createsEntryWithCorrectResponse() {
         val transaction = TestTransactionFactory.createTransaction("GET")
         val entry = Entry.fromHttpTransaction(transaction)
 
@@ -55,7 +59,7 @@ internal class EntryTest {
                     size = 1000,
                     mimeType = "application/json",
                     text =
-                        """{"field": "value"}"""
+                    """{"field": "value"}"""
                 ),
                 redirectUrl = "",
                 headersSize = 0,

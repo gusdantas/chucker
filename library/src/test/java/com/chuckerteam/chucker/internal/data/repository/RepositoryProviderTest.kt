@@ -8,11 +8,12 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class RepositoryProviderTest {
+internal class RepositoryProviderTest {
     private lateinit var db: ChuckerDatabase
     private lateinit var context: Context
 
@@ -30,41 +31,24 @@ class RepositoryProviderTest {
         RepositoryProvider.close()
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun uninitialzedTransactionRepo() {
-        RepositoryProvider.transaction()
-    }
-
-    @Test(expected = IllegalStateException::class)
-    fun uninitialzedErrorsRepo() {
-        RepositoryProvider.throwable()
+    @Test
+    fun `fails with uninitialized transaction repository`() {
+        assertThrows<IllegalStateException> {
+            RepositoryProvider.transaction()
+        }
     }
 
     @Test
-    fun transactionRepoAvailableAfterInitialize() {
+    fun `transaction repository is available after initialization`() {
         RepositoryProvider.initialize(context)
         assertThat(RepositoryProvider.transaction()).isNotNull()
     }
 
     @Test
-    fun errorRepoAvailableAfterInitialize() {
-        RepositoryProvider.initialize(context)
-        assertThat(RepositoryProvider.throwable()).isNotNull()
-    }
-
-    @Test
-    fun providerCachesInstancesOfTransactionRepo() {
+    fun `transaction repository is cached`() {
         RepositoryProvider.initialize(context)
         val one = RepositoryProvider.transaction()
         val two = RepositoryProvider.transaction()
-        assertThat(one).isSameInstanceAs(two)
-    }
-
-    @Test
-    fun providerCachesInstancesOfErrorRepo() {
-        RepositoryProvider.initialize(context)
-        val one = RepositoryProvider.throwable()
-        val two = RepositoryProvider.throwable()
         assertThat(one).isSameInstanceAs(two)
     }
 }

@@ -3,14 +3,14 @@ package com.chuckerteam.chucker.internal.data.entity
 import androidx.room.ColumnInfo
 import com.chuckerteam.chucker.internal.support.FormatUtils
 import com.chuckerteam.chucker.internal.support.FormattedUrl
-import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /**
  * A subset of [HttpTransaction] to perform faster Read operations on the Repository.
  * This Tuple is good to be used on List or Preview interfaces.
  */
 @Suppress("LongParameterList")
-internal class HttpTransactionTuple(
+internal data class HttpTransactionTuple(
     @ColumnInfo(name = "id") var id: Long,
     @ColumnInfo(name = "requestDate") var requestDate: Long?,
     @ColumnInfo(name = "tookMs") var tookMs: Long?,
@@ -53,7 +53,7 @@ internal class HttpTransactionTuple(
         // and we are only interested in a formatted path with query.
         val dummyUrl = "https://www.example.com$path"
 
-        val httpUrl = HttpUrl.parse(dummyUrl) ?: return ""
+        val httpUrl = dummyUrl.toHttpUrlOrNull() ?: return ""
         return FormattedUrl.fromHttpUrl(httpUrl, encode).pathWithQuery
     }
 }

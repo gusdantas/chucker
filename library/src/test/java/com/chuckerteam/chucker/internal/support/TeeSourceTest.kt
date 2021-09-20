@@ -1,83 +1,83 @@
 package com.chuckerteam.chucker.internal.support
 
+import com.chuckerteam.chucker.util.SEGMENT_SIZE
 import com.google.common.truth.Truth.assertThat
 import okio.Buffer
 import okio.BufferedSource
 import okio.ByteString
-import okio.Okio
 import okio.Sink
 import okio.Source
 import okio.Timeout
+import okio.buffer
 import org.junit.jupiter.api.Test
 import java.io.IOException
 import kotlin.random.Random
 
-class TeeSourceTest {
+internal class TeeSourceTest {
     @Test
-    fun bytesReadFromUpstream_areAvailableDownstream() {
+    fun `upstream bytes are forwarded`() {
         val testSource = TestSource()
 
         val teeSource = TeeSource(testSource, sideStream = Buffer())
-        val downstream = Okio.buffer(teeSource).use(BufferedSource::readByteString)
+        val downstream = teeSource.buffer().use(BufferedSource::readByteString)
 
         assertThat(downstream).isEqualTo(testSource.content)
     }
 
     @Test
-    fun bytesReadFromUpstream_areAvailableToSideChannel() {
+    fun `upstream bytes are side streamed`() {
         val testSource = TestSource()
         val sideStream = Buffer()
 
         val teeSource = TeeSource(testSource, sideStream)
-        Okio.buffer(teeSource).use(BufferedSource::readByteString)
+        teeSource.buffer().use(BufferedSource::readByteString)
 
         assertThat(sideStream.snapshot()).isEqualTo(testSource.content)
     }
 
     @Test
-    fun bytesPulledFromUpstream_arePulledToSideChannel_alongTheDownstream() {
+    fun `upstream bytes are available in side strean while being pulled`() {
         val repetitions = Random.nextInt(1, 100)
-        // Okio uses 8KiB as a single size read.
-        val testSource = TestSource(8_192 * repetitions)
+        val testSource = TestSource(repetitions * SEGMENT_SIZE.toInt())
         val sideStream = Buffer()
 
         val teeSource = TeeSource(testSource, sideStream)
-        Okio.buffer(teeSource).use { source ->
+        teeSource.buffer().use { source ->
             repeat(repetitions) { index ->
-                source.readByteString(8_192)
+                source.readByteString(SEGMENT_SIZE)
 
-                val subContent = testSource.content.substring(0, (index + 1) * 8_192)
+                val subContent = testSource.content.substring(0, (index + 1) * SEGMENT_SIZE.toInt())
                 assertThat(sideStream.snapshot()).isEqualTo(subContent)
             }
         }
     }
 
     @Test
-    fun sideStreamThatFailsToWrite_doesNotFailDownstream() {
+    fun `side stream failing to write does not affect downstream`() {
         val testSource = TestSource()
 
         val teeSource = TeeSource(testSource, sideStream = ThrowingSink(throwForWrite = true))
-        val downstream = Okio.buffer(teeSource).use(BufferedSource::readByteString)
+        val downstream = teeSource.buffer().use(BufferedSource::readByteString)
 
         assertThat(downstream).isEqualTo(testSource.content)
     }
 
     @Test
-    fun sideStreamThatFailsToFlush_doesNotFailDownstream() {
+    fun `side stream failing to flush does not affect downstream`() {
         val testSource = TestSource()
 
         val teeSource = TeeSource(testSource, sideStream = ThrowingSink(throwForFlush = true))
-        val downstream = Okio.buffer(teeSource).use(BufferedSource::readByteString)
+        val downstream = teeSource.buffer().use(BufferedSource::readByteString)
 
         assertThat(downstream).isEqualTo(testSource.content)
     }
 
     @Test
-    fun sideStreamThatFailsToClose_doesNotFailDownstream() {
+    fun `side stream failing to close does not affect downstream`() {
         val testSource = TestSource()
 
         val teeSource = TeeSource(testSource, sideStream = ThrowingSink(throwForClose = true))
-        val downstream = Okio.buffer(teeSource).use(BufferedSource::readByteString)
+        val downstream = teeSource.buffer().use(BufferedSource::readByteString)
 
         assertThat(downstream).isEqualTo(testSource.content)
     }

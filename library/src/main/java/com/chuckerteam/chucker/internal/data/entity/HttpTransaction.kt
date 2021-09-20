@@ -14,6 +14,7 @@ import com.chuckerteam.chucker.internal.support.JsonConverter
 import com.google.gson.reflect.TypeToken
 import okhttp3.Headers
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.util.Date
 
 /**
@@ -40,7 +41,7 @@ internal class HttpTransaction(
     @ColumnInfo(name = "requestContentType") var requestContentType: String?,
     @ColumnInfo(name = "requestHeaders") var requestHeaders: String?,
     @ColumnInfo(name = "requestBody") var requestBody: String?,
-    @ColumnInfo(name = "isRequestBodyPlainText") var isRequestBodyPlainText: Boolean = true,
+    @ColumnInfo(name = "isRequestBodyEncoded") var isRequestBodyEncoded: Boolean = false,
     @ColumnInfo(name = "responseCode") var responseCode: Int?,
     @ColumnInfo(name = "responseMessage") var responseMessage: String?,
     @ColumnInfo(name = "error") var error: String?,
@@ -48,7 +49,7 @@ internal class HttpTransaction(
     @ColumnInfo(name = "responseContentType") var responseContentType: String?,
     @ColumnInfo(name = "responseHeaders") var responseHeaders: String?,
     @ColumnInfo(name = "responseBody") var responseBody: String?,
-    @ColumnInfo(name = "isResponseBodyPlainText") var isResponseBodyPlainText: Boolean = true,
+    @ColumnInfo(name = "isResponseBodyEncoded") var isResponseBodyEncoded: Boolean = false,
     @ColumnInfo(name = "responseImageData") var responseImageData: ByteArray?
 ) {
 
@@ -184,7 +185,7 @@ internal class HttpTransaction(
 
     private fun toHttpHeaderList(headers: Headers): List<HttpHeader> {
         val httpHeaders = ArrayList<HttpHeader>()
-        for (i in 0 until headers.size()) {
+        for (i in 0 until headers.size) {
             httpHeaders.add(HttpHeader(headers.name(i), headers.value(i)))
         }
         return httpHeaders
@@ -223,12 +224,12 @@ internal class HttpTransaction(
     }
 
     fun getFormattedUrl(encode: Boolean): String {
-        val httpUrl = url?.let(HttpUrl::get) ?: return ""
+        val httpUrl = url?.toHttpUrl() ?: return ""
         return FormattedUrl.fromHttpUrl(httpUrl, encode).url
     }
 
     fun getFormattedPath(encode: Boolean): String {
-        val httpUrl = url?.let(HttpUrl::get) ?: return ""
+        val httpUrl = url?.toHttpUrl() ?: return ""
         return FormattedUrl.fromHttpUrl(httpUrl, encode).pathWithQuery
     }
 
@@ -255,7 +256,7 @@ internal class HttpTransaction(
             (requestContentType == other.requestContentType) &&
             (requestHeaders == other.requestHeaders) &&
             (requestBody == other.requestBody) &&
-            (isRequestBodyPlainText == other.isRequestBodyPlainText) &&
+            (isRequestBodyEncoded == other.isRequestBodyEncoded) &&
             (responseCode == other.responseCode) &&
             (responseMessage == other.responseMessage) &&
             (error == other.error) &&
@@ -263,7 +264,7 @@ internal class HttpTransaction(
             (responseContentType == other.responseContentType) &&
             (responseHeaders == other.responseHeaders) &&
             (responseBody == other.responseBody) &&
-            (isResponseBodyPlainText == other.isResponseBodyPlainText) &&
+            (isResponseBodyEncoded == other.isResponseBodyEncoded) &&
             (responseImageData?.contentEquals(other.responseImageData ?: byteArrayOf()) != false)
     }
 }

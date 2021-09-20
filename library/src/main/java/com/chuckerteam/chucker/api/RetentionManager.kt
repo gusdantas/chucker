@@ -2,31 +2,33 @@ package com.chuckerteam.chucker.api
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
-import com.chuckerteam.chucker.api.Chucker.LOG_TAG
+import androidx.core.content.edit
+import com.chuckerteam.chucker.api.RetentionManager.Period
 import com.chuckerteam.chucker.internal.data.repository.RepositoryProvider
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.chuckerteam.chucker.internal.support.Logger
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.TimeUnit
 
 /**
- * Class responsible of holding the logic for the retention of your HTTP transactions
- * and your throwable. You can customize how long data should be stored here.
+ * Class responsible of holding the logic for the retention of your HTTP transactions.
+ * You can customize how long data should be stored here.
  * @param context An Android Context
  * @param retentionPeriod A [Period] to specify the retention of data. Default 1 week.
  */
 @Suppress("MagicNumber")
-class RetentionManager @JvmOverloads constructor(
+public class RetentionManager @JvmOverloads constructor(
     context: Context,
     retentionPeriod: Period = Period.ONE_WEEK
 ) {
 
     // The actual retention period in milliseconds (default to ONE_WEEK)
     private val period: Long = toMillis(retentionPeriod)
+
     // How often the cleanup should happen
     private val cleanupFrequency: Long
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, 0)
+    private val maintenanceMutex = Mutex()
 
     init {
         cleanupFrequency = if (retentionPeriod == Period.ONE_HOUR) {
@@ -40,12 +42,11 @@ class RetentionManager @JvmOverloads constructor(
      * Call this function to check and eventually trigger a cleanup.
      * Please note that this method is not forcing a cleanup.
      */
-    @Synchronized
-    internal fun doMaintenance() {
+    internal suspend fun doMaintenance() = maintenanceMutex.withLock {
         if (period > 0) {
             val now = System.currentTimeMillis()
             if (isCleanupDue(now)) {
-                Log.i(LOG_TAG, "Performing data retention maintenance...")
+                Logger.info("Performing data retention maintenance...")
                 deleteSince(getThreshold(now))
                 updateLastCleanup(now)
             }
@@ -61,14 +62,11 @@ class RetentionManager @JvmOverloads constructor(
 
     private fun updateLastCleanup(time: Long) {
         lastCleanup = time
-        prefs.edit().putLong(KEY_LAST_CLEANUP, time).apply()
+        prefs.edit { putLong(KEY_LAST_CLEANUP, time) }
     }
 
-    private fun deleteSince(threshold: Long) {
-        CoroutineScope(Dispatchers.IO).launch {
-            RepositoryProvider.transaction().deleteOldTransactions(threshold)
-            RepositoryProvider.throwable().deleteOldThrowables(threshold)
-        }
+    private suspend fun deleteSince(threshold: Long) {
+        RepositoryProvider.transaction().deleteOldTransactions(threshold)
     }
 
     private fun isCleanupDue(now: Long) = now - getLastCleanup(now) > cleanupFrequency
@@ -84,18 +82,21 @@ class RetentionManager @JvmOverloads constructor(
         }
     }
 
-    enum class Period {
+    public enum class Period {
         /** Retain data for the last hour. */
         ONE_HOUR,
+
         /** Retain data for the last day. */
         ONE_DAY,
+
         /** Retain data for the last week. */
         ONE_WEEK,
+
         /** Retain data forever. */
         FOREVER
     }
 
-    companion object {
+    private companion object {
         private const val PREFS_NAME = "chucker_preferences"
         private const val KEY_LAST_CLEANUP = "last_cleanup"
         private var lastCleanup: Long = 0

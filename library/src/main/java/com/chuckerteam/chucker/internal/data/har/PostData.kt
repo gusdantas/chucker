@@ -10,7 +10,7 @@ internal data class PostData(
 ) {
     companion object {
         fun responsePostData(transaction: HttpTransaction): PostData? {
-            if (transaction.responsePayloadSize == null || !transaction.isResponseBodyPlainText) return null
+            if (transaction.responsePayloadSize == null || transaction.isResponseBodyEncoded) return null
 
             return PostData(
                 size = transaction.responsePayloadSize ?: 0,
@@ -20,7 +20,7 @@ internal data class PostData(
         }
 
         fun requestPostData(transaction: HttpTransaction): PostData? {
-            if (transaction.requestPayloadSize == null || !transaction.isRequestBodyPlainText) return null
+            if (transaction.requestPayloadSize == null || transaction.isResponseBodyEncoded) return null
             return PostData(
                 size = transaction.requestPayloadSize ?: 0,
                 mimeType = transaction.requestContentType ?: "text",

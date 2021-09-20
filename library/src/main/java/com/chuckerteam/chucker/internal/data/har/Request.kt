@@ -2,7 +2,7 @@ package com.chuckerteam.chucker.internal.data.har
 
 import com.chuckerteam.chucker.internal.data.entity.HttpTransaction
 import com.google.gson.annotations.SerializedName
-import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 
 internal data class Request(
     @SerializedName("method") val method: String,
@@ -25,8 +25,10 @@ internal data class Request(
                 url = transaction.url ?: "",
                 httpVersion = transaction.protocol ?: "",
                 cookies = emptyList(),
-                headers = transaction.getParsedRequestHeaders()?.map { Header(it.name, it.value) } ?: emptyList(),
-                queryString = QueryString.fromUrl(HttpUrl.get(transaction.url ?: "")),
+                headers = transaction.getParsedRequestHeaders()?.map { Header(it.name, it.value) }
+                    ?: emptyList(),
+                queryString = QueryString.fromUrl(transaction.url!!.toHttpUrl()),
+//                queryString = QueryString.fromUrl(HttpUrl.get(transaction.url ?: "")),
                 postData = PostData.requestPostData(transaction),
                 headersSize = transaction.requestHeaders?.length ?: 0,
                 bodySize = transaction.requestPayloadSize ?: 0

@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat
 import com.chuckerteam.chucker.R
 import com.chuckerteam.chucker.api.Chucker
 import com.chuckerteam.chucker.internal.data.entity.HttpTransaction
-import com.chuckerteam.chucker.internal.data.entity.RecordedThrowable
 import com.chuckerteam.chucker.internal.ui.BaseChuckerActivity
 import java.util.HashSet
 
@@ -21,11 +20,7 @@ internal class NotificationHelper(val context: Context) {
     companion object {
         private const val TRANSACTIONS_CHANNEL_ID = "chucker_transactions"
 
-        @Deprecated("This variable will be removed in 4.x release")
-        private const val ERRORS_CHANNEL_ID = "chucker_errors"
-
         private const val TRANSACTION_NOTIFICATION_ID = 1138
-        private const val ERROR_NOTIFICATION_ID = 3546
 
         private const val BUFFER_SIZE = 10
         private const val INTENT_REQUEST_CODE = 11
@@ -48,16 +43,7 @@ internal class NotificationHelper(val context: Context) {
             context,
             TRANSACTION_NOTIFICATION_ID,
             Chucker.getLaunchIntent(context),
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-    }
-
-    private val errorsScreenIntent by lazy {
-        PendingIntent.getActivity(
-            context,
-            ERROR_NOTIFICATION_ID,
-            Chucker.getLaunchIntent(context, Chucker.SCREEN_ERROR),
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_UPDATE_CURRENT or immutableFlag()
         )
     }
 
@@ -68,12 +54,7 @@ internal class NotificationHelper(val context: Context) {
                 context.getString(R.string.chucker_network_notification_category),
                 NotificationManager.IMPORTANCE_LOW
             )
-            val errorsChannel = NotificationChannel(
-                ERRORS_CHANNEL_ID,
-                context.getString(R.string.chucker_throwable_notification_category),
-                NotificationManager.IMPORTANCE_LOW
-            )
-            notificationManager.createNotificationChannels(listOf(transactionsChannel, errorsChannel))
+            notificationManager.createNotificationChannels(listOf(transactionsChannel))
         }
     }
 
@@ -104,7 +85,7 @@ internal class NotificationHelper(val context: Context) {
                     .setColor(ContextCompat.getColor(context, R.color.chucker_color_primary))
                     .setContentTitle(context.getString(R.string.chucker_http_notification_title))
                     .setAutoCancel(true)
-                    .addAction(createClearAction(ClearDatabaseService.ClearAction.Transaction))
+                    .addAction(createClearAction())
             val inboxStyle = NotificationCompat.InboxStyle()
             synchronized(transactionBuffer) {
                 var count = 0
@@ -129,47 +110,31 @@ internal class NotificationHelper(val context: Context) {
         }
     }
 
-    fun show(throwable: RecordedThrowable) {
-        if (!BaseChuckerActivity.isInForeground) {
-            val builder =
-                NotificationCompat.Builder(context, ERRORS_CHANNEL_ID)
-                    .setContentIntent(errorsScreenIntent)
-                    .setLocalOnly(true)
-                    .setSmallIcon(R.drawable.chucker_ic_error_notifications)
-                    .setColor(ContextCompat.getColor(context, R.color.chucker_status_error))
-                    .setContentTitle(throwable.clazz)
-                    .setAutoCancel(true)
-                    .setContentText(throwable.message)
-                    .addAction(createClearAction(ClearDatabaseService.ClearAction.Error))
-            notificationManager.notify(ERROR_NOTIFICATION_ID, builder.build())
-        }
-    }
-
-    private fun createClearAction(clearAction: ClearDatabaseService.ClearAction):
+    private fun createClearAction():
         NotificationCompat.Action {
             val clearTitle = context.getString(R.string.chucker_clear)
-            val deleteIntent = Intent(context, ClearDatabaseService::class.java).apply {
-                putExtra(ClearDatabaseService.EXTRA_ITEM_TO_CLEAR, clearAction)
-            }
-            val intent = PendingIntent.getService(
+            val clearTransactionsBroadcastIntent =
+                Intent(context, ClearDatabaseJobIntentServiceReceiver::class.java)
+            val pendingBroadcastIntent = PendingIntent.getBroadcast(
                 context,
                 INTENT_REQUEST_CODE,
-                deleteIntent,
-                PendingIntent.FLAG_ONE_SHOT
+                clearTransactionsBroadcastIntent,
+                PendingIntent.FLAG_ONE_SHOT or immutableFlag()
             )
-            return NotificationCompat.Action(R.drawable.chucker_ic_delete_white, clearTitle, intent)
+            return NotificationCompat.Action(
+                R.drawable.chucker_ic_delete_white,
+                clearTitle,
+                pendingBroadcastIntent
+            )
         }
-
-    fun dismissTransactionsNotification() {
-        notificationManager.cancel(TRANSACTION_NOTIFICATION_ID)
-    }
-
-    fun dismissErrorsNotification() {
-        notificationManager.cancel(ERROR_NOTIFICATION_ID)
-    }
 
     fun dismissNotifications() {
         notificationManager.cancel(TRANSACTION_NOTIFICATION_ID)
-        notificationManager.cancel(ERROR_NOTIFICATION_ID)
+    }
+
+    private fun immutableFlag() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        PendingIntent.FLAG_IMMUTABLE
+    } else {
+        0
     }
 }

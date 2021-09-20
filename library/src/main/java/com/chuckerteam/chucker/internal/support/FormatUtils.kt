@@ -8,7 +8,6 @@ import org.xml.sax.InputSource
 import org.xml.sax.SAXParseException
 import java.io.ByteArrayInputStream
 import java.io.IOException
-import java.io.PrintWriter
 import java.io.StringWriter
 import java.io.UnsupportedEncodingException
 import java.net.URLDecoder
@@ -84,11 +83,11 @@ internal object FormatUtils {
                 transform(domSource, result)
             }
             writer.toString()
-        } catch (e: SAXParseException) {
+        } catch (ignore: SAXParseException) {
             xml
-        } catch (io: IOException) {
+        } catch (ignore: IOException) {
             xml
-        } catch (t: TransformerException) {
+        } catch (ignore: TransformerException) {
             xml
         }
     }
@@ -104,23 +103,10 @@ internal object FormatUtils {
                 val value = if (keyValue.size > 1) URLDecoder.decode(keyValue[1], "UTF-8") else ""
                 "$key: $value"
             }
-        } catch (e: IllegalArgumentException) {
+        } catch (ignore: IllegalArgumentException) {
             form
-        } catch (e: UnsupportedEncodingException) {
+        } catch (ignore: UnsupportedEncodingException) {
             form
         }
-    }
-
-    /**
-     * Convert a stacktrace into a String.
-     *
-     * @param throwable The throwable to convert
-     * @return The String of the throwable
-     */
-    fun formatThrowable(throwable: Throwable): String {
-        val sw = StringWriter()
-        val pw = PrintWriter(sw)
-        throwable.printStackTrace(pw)
-        return sw.toString()
     }
 }

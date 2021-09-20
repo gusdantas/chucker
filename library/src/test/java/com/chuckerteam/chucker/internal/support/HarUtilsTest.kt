@@ -1,15 +1,15 @@
 package com.chuckerteam.chucker.internal.support
 
-import com.chuckerteam.chucker.BuildConfig
-import com.chuckerteam.chucker.TestTransactionFactory
 import com.chuckerteam.chucker.internal.data.har.Entry
+import com.chuckerteam.chucker.util.TestTransactionFactory
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import java.util.Date
 
 internal class HarUtilsTest {
-    @Test fun fromHttpTransactions_createsHarWithMultipleEntries() {
+    @Test
+    fun fromHttpTransactions_createsHarWithMultipleEntries() {
         val getTransaction = TestTransactionFactory.createTransaction("GET")
         val postTransaction = TestTransactionFactory.createTransaction("POST")
         val har = HarUtils.fromHttpTransactions(listOf(getTransaction, postTransaction))
@@ -18,7 +18,8 @@ internal class HarUtilsTest {
         assertThat(har.log.entries[1].request!!.method).isEqualTo("POST")
     }
 
-    @Test fun harString_createsJsonString(): Unit = runBlocking {
+    @Test
+    fun harString_createsJsonString(): Unit = runBlocking {
         val transaction = TestTransactionFactory.createTransaction("GET")
         assertThat(HarUtils.harStringFromTransactions(listOf(transaction))).isEqualTo(
             """
@@ -26,8 +27,8 @@ internal class HarUtilsTest {
               "log": {
                 "version": "1.2",
                 "creator": {
-                  "name": "com.chuckerteam.chucker",
-                  "version": "${BuildConfig.VERSION_NAME}"
+                  "name": "BuildConfig.LIBRARY_PACKAGE_NAME",
+                  "version": "BuildConfig.VERSION_NAME"
                 },
                 "entries": [
                   {

@@ -6,16 +6,17 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
-import androidx.core.app.ShareCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import com.chuckerteam.chucker.R
 import com.chuckerteam.chucker.databinding.ChuckerActivityTransactionBinding
-import com.chuckerteam.chucker.internal.support.FileShareHelper
-import com.chuckerteam.chucker.internal.support.HAR_EXPORT_FILENAME
-import com.chuckerteam.chucker.internal.support.HarUtils
-import com.chuckerteam.chucker.internal.support.ShareUtils
+import com.chuckerteam.chucker.internal.data.entity.HttpTransaction
+import com.chuckerteam.chucker.internal.support.Sharable
+import com.chuckerteam.chucker.internal.support.TransactionCurlCommandSharable
+import com.chuckerteam.chucker.internal.support.TransactionDetailsSharable
+import com.chuckerteam.chucker.internal.support.shareAsFile
+import com.chuckerteam.chucker.internal.support.shareAsUtf8Text
 import com.chuckerteam.chucker.internal.ui.BaseChuckerActivity
 import kotlinx.coroutines.launch
 
@@ -71,6 +72,62 @@ internal class TransactionActivity : BaseChuckerActivity() {
         )
     }
 
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.share_text -> shareTransactionAsText { transaction ->
+            val encodeUrls = viewModel.encodeUrl.value!!
+            TransactionDetailsSharable(transaction, encodeUrls)
+        }
+        R.id.share_curl -> shareTransactionAsText { transaction ->
+            TransactionCurlCommandSharable(transaction)
+        }
+        R.id.share_file -> shareTransactionAsFile { transaction ->
+            val encodeUrls = viewModel.encodeUrl.value!!
+            TransactionDetailsSharable(transaction, encodeUrls)
+        }
+        else -> super.onOptionsItemSelected(item)
+    }
+
+    private fun shareTransactionAsText(block: (HttpTransaction) -> Sharable): Boolean {
+        val transaction = viewModel.transaction.value
+        if (transaction == null) {
+            showToast(getString(R.string.chucker_request_not_ready))
+            return true
+        }
+        val sharable = block(transaction)
+        lifecycleScope.launch {
+            val shareIntent = sharable.shareAsUtf8Text(
+                activity = this@TransactionActivity,
+                intentTitle = getString(R.string.chucker_share_transaction_title),
+                intentSubject = getString(R.string.chucker_share_transaction_subject)
+            )
+            startActivity(shareIntent)
+        }
+        return true
+    }
+
+    private fun shareTransactionAsFile(block: (HttpTransaction) -> Sharable): Boolean {
+        val transaction = viewModel.transaction.value
+        if (transaction == null) {
+            showToast(getString(R.string.chucker_request_not_ready))
+            return true
+        }
+
+        val sharable = block(transaction)
+        lifecycleScope.launch {
+            val shareIntent = sharable.shareAsFile(
+                activity = this@TransactionActivity,
+                fileName = EXPORT_FILE_NAME,
+                intentTitle = getString(R.string.chucker_share_transaction_title),
+                intentSubject = getString(R.string.chucker_share_transaction_subject),
+                clipDataLabel = "transaction"
+            )
+            if (shareIntent != null) {
+                startActivity(shareIntent)
+            }
+        }
+        return true
+    }
+    /*
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             R.id.share_text -> {
@@ -99,7 +156,7 @@ internal class TransactionActivity : BaseChuckerActivity() {
             else -> {
                 super.onOptionsItemSelected(item)
             }
-        }
+        }*/
 
     private fun setupViewPager(viewPager: ViewPager) {
         viewPager.adapter = TransactionPagerAdapter(this, supportFragmentManager)
@@ -113,19 +170,8 @@ internal class TransactionActivity : BaseChuckerActivity() {
         viewPager.currentItem = selectedTabPosition
     }
 
-    private fun share(transactionDetailsText: String) {
-        startActivity(
-            ShareCompat.IntentBuilder.from(this)
-                .setType(MIME_TYPE)
-                .setChooserTitle(getString(R.string.chucker_share_transaction_title))
-                .setSubject(getString(R.string.chucker_share_transaction_subject))
-                .setText(transactionDetailsText)
-                .createChooserIntent()
-        )
-    }
-
     companion object {
-        private const val MIME_TYPE = "text/plain"
+        private const val EXPORT_FILE_NAME = "transaction.txt"
         private const val EXTRA_TRANSACTION_ID = "transaction_id"
         private var selectedTabPosition = 0
 
