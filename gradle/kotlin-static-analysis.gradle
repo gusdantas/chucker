@@ -15,6 +15,7 @@ ktlint {
         exclude { element -> element.file.path.contains("generated/") }
         include("**/kotlin/**")
     }
+    disabledRules = ["import-ordering"]
 }
 
 detekt {
