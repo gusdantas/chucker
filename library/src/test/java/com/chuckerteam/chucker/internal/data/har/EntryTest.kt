@@ -1,5 +1,11 @@
 package com.chuckerteam.chucker.internal.data.har
 
+import com.chuckerteam.chucker.internal.data.har.log.Entry
+import com.chuckerteam.chucker.internal.data.har.log.entry.Request
+import com.chuckerteam.chucker.internal.data.har.log.entry.Response
+import com.chuckerteam.chucker.internal.data.har.log.entry.Timings
+import com.chuckerteam.chucker.internal.data.har.log.entry.request.PostData
+import com.chuckerteam.chucker.internal.data.har.log.entry.response.Content
 import com.chuckerteam.chucker.util.TestTransactionFactory
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -36,7 +42,7 @@ internal class EntryTest {
                 cookies = emptyList(),
                 headers = emptyList(),
                 queryString = emptyList(),
-                postData = PostData(size = 1000, mimeType = "application/json", text = ""),
+                postData = PostData(mimeType = "application/json", params = null, text = ""),
                 headersSize = 0,
                 bodySize = 1000
             )
@@ -55,17 +61,25 @@ internal class EntryTest {
                 httpVersion = "HTTP",
                 cookies = emptyList(),
                 headers = emptyList(),
-                content = PostData(
+                content = Content(
                     size = 1000,
+                    compression = null,
                     mimeType = "application/json",
-                    text =
-                    """{"field": "value"}"""
+                    text = """{"field": "value"}""",
+                    encoding = null
                 ),
                 redirectUrl = "",
                 headersSize = 0,
-                bodySize = 1000,
-                timings = Timings(send = 0, wait = 0, receive = 1000)
+                bodySize = 1000
             )
         )
+    }
+
+    @Test
+    fun fromHttpTransaction_createsEntryWithCorrectTimings() {
+        val transaction = TestTransactionFactory.createTransaction("GET")
+        val entry = Entry.fromHttpTransaction(transaction)
+
+        assertThat(entry.timings).isEqualTo(Timings.fromHttpTransaction(transaction))
     }
 }

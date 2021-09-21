@@ -1,5 +1,7 @@
 package com.chuckerteam.chucker.internal.data.har
 
+import com.chuckerteam.chucker.internal.data.har.log.entry.Response
+import com.chuckerteam.chucker.internal.data.har.log.entry.response.Content
 import com.chuckerteam.chucker.util.TestTransactionFactory
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -35,11 +37,12 @@ internal class ResponseTest {
         val response = Response.fromHttpTransaction(transaction)
 
         assertThat(response?.content).isEqualTo(
-            PostData(
+            Content(
                 size = 1000,
+                compression = null,
                 mimeType = "application/json",
-                text =
-                """{"field": "value"}"""
+                text = """{"field": "value"}""",
+                encoding = null
             )
         )
     }
@@ -50,13 +53,5 @@ internal class ResponseTest {
         val response = Response.fromHttpTransaction(transaction)
 
         assertThat(response?.bodySize).isEqualTo(1000)
-    }
-
-    @Test
-    fun fromHttpTransaction_createsResponseWithCorrectTimings() {
-        val transaction = TestTransactionFactory.createTransaction("GET")
-        val response = Response.fromHttpTransaction(transaction)
-
-        assertThat(response?.timings).isEqualTo(Timings(send = 0, wait = 0, receive = 1000))
     }
 }

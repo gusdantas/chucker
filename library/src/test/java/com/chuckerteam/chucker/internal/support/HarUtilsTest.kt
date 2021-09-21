@@ -1,6 +1,6 @@
 package com.chuckerteam.chucker.internal.support
 
-import com.chuckerteam.chucker.internal.data.har.Entry
+import com.chuckerteam.chucker.internal.data.har.log.Entry
 import com.chuckerteam.chucker.util.TestTransactionFactory
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
@@ -21,58 +21,59 @@ internal class HarUtilsTest {
     @Test
     fun harString_createsJsonString(): Unit = runBlocking {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        assertThat(HarUtils.harStringFromTransactions(listOf(transaction))).isEqualTo(
+        val result = HarUtils.harStringFromTransactions(listOf(transaction))
+        assertThat(result).isEqualTo(
             """
-            {
-              "log": {
-                "version": "1.2",
-                "creator": {
-                  "name": "BuildConfig.LIBRARY_PACKAGE_NAME",
-                  "version": "BuildConfig.VERSION_NAME"
-                },
-                "entries": [
-                  {
-                    "startedDateTime": "${Entry.DateFormat.get()!!.format(Date(transaction.requestDate!!))}",
-                    "time": 1000,
-                    "request": {
-                      "method": "GET",
-                      "url": "http://localhost:80/getUsers",
-                      "httpVersion": "HTTP",
-                      "cookies": [],
-                      "headers": [],
-                      "queryString": [],
-                      "postData": {
-                        "size": 1000,
-                        "mimeType": "application/json",
-                        "text": ""
-                      },
-                      "headersSize": 0,
-                      "bodySize": 1000
+                {
+                  "log": {
+                    "version": "1.2",
+                    "creator": {
+                      "name": "BuildConfig.LIBRARY_PACKAGE_NAME",
+                      "version": "BuildConfig.VERSION_NAME"
                     },
-                    "response": {
-                      "status": 200,
-                      "statusText": "OK",
-                      "httpVersion": "HTTP",
-                      "cookies": [],
-                      "headers": [],
-                      "content": {
-                        "size": 1000,
-                        "mimeType": "application/json",
-                        "text": "{\"field\": \"value\"}"
-                      },
-                      "redirectURL": "",
-                      "headersSize": 0,
-                      "bodySize": 1000,
-                      "timings": {
-                        "send": 0,
-                        "wait": 0,
-                        "receive": 1000
+                    "entries": [
+                      {
+                        "startedDateTime": "${Entry.DateFormat.get()!!.format(Date(transaction.requestDate!!))}",
+                        "time": 1000,
+                        "request": {
+                          "method": "GET",
+                          "url": "http://localhost:80/getUsers",
+                          "httpVersion": "HTTP",
+                          "cookies": [],
+                          "headers": [],
+                          "queryString": [],
+                          "postData": {
+                            "mimeType": "application/json",
+                            "text": ""
+                          },
+                          "headersSize": 0,
+                          "bodySize": 1000
+                        },
+                        "response": {
+                          "status": 200,
+                          "statusText": "OK",
+                          "httpVersion": "HTTP",
+                          "cookies": [],
+                          "headers": [],
+                          "content": {
+                            "size": 1000,
+                            "mimeType": "application/json",
+                            "text": "{\"field\": \"value\"}"
+                          },
+                          "redirectURL": "",
+                          "headersSize": 0,
+                          "bodySize": 1000
+                        },
+                        "cache": {},
+                        "timings": {
+                          "send": 0,
+                          "wait": 0,
+                          "receive": 1000
+                        }
                       }
-                    }
+                    ]
                   }
-                ]
-              }
-            }
+                }
             """.trimIndent()
         )
     }

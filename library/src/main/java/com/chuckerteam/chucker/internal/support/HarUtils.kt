@@ -2,10 +2,10 @@ package com.chuckerteam.chucker.internal.support
 
 import androidx.annotation.VisibleForTesting
 import com.chuckerteam.chucker.internal.data.entity.HttpTransaction
-import com.chuckerteam.chucker.internal.data.har.Creator
-import com.chuckerteam.chucker.internal.data.har.Entry
 import com.chuckerteam.chucker.internal.data.har.Har
 import com.chuckerteam.chucker.internal.data.har.Log
+import com.chuckerteam.chucker.internal.data.har.log.Creator
+import com.chuckerteam.chucker.internal.data.har.log.Entry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -18,14 +18,16 @@ internal object HarUtils {
         JsonConverter.nonNullSerializerInstance.toJson(fromHttpTransactions(transactions))
     }
 
-    @VisibleForTesting fun fromHttpTransactions(transactions: List<HttpTransaction>): Har {
+    @VisibleForTesting
+    fun fromHttpTransactions(transactions: List<HttpTransaction>): Har {
         return Har(
             log = Log(
-                version = "1.2",
                 creator = Creator(
                     name = "BuildConfig.LIBRARY_PACKAGE_NAME",
                     version = "BuildConfig.VERSION_NAME"
                 ),
+                browser = null,
+                pages = null,
                 entries = transactions.map(Entry.Companion::fromHttpTransaction).filter { it.response != null }
             )
         )

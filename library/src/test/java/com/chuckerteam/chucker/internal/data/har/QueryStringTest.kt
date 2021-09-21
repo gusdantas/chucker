@@ -1,5 +1,6 @@
 package com.chuckerteam.chucker.internal.data.har
 
+import com.chuckerteam.chucker.internal.data.har.log.entry.request.QueryString
 import com.google.common.truth.Truth.assertThat
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.junit.Test

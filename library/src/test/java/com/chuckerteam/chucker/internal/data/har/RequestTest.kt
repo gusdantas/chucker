@@ -1,5 +1,7 @@
 package com.chuckerteam.chucker.internal.data.har
 
+import com.chuckerteam.chucker.internal.data.har.log.entry.Request
+import com.chuckerteam.chucker.internal.data.har.log.entry.request.PostData
 import com.chuckerteam.chucker.util.TestTransactionFactory
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -34,7 +36,8 @@ internal class RequestTest {
         val transaction = TestTransactionFactory.createTransaction("GET")
         val request = Request.fromHttpTransaction(transaction)
 
-        assertThat(request?.postData).isEqualTo(PostData(size = 1000, mimeType = "application/json", text = ""))
+        assertThat(request?.postData)
+            .isEqualTo(PostData(mimeType = "application/json", params = null, text = ""))
     }
 
     @Test

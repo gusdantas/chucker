@@ -1,9 +1,12 @@
-package com.chuckerteam.chucker.internal.data.har
+package com.chuckerteam.chucker.internal.data.har.log.entry
 
 import com.chuckerteam.chucker.internal.data.entity.HttpTransaction
+import com.chuckerteam.chucker.internal.data.har.log.entry.request.PostData
+import com.chuckerteam.chucker.internal.data.har.log.entry.request.QueryString
 import com.google.gson.annotations.SerializedName
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
+// https://github.com/ahmadnassri/har-spec/blob/master/versions/1.2.md#request
 internal data class Request(
     @SerializedName("method") val method: String,
     @SerializedName("url") val url: String,
@@ -12,8 +15,9 @@ internal data class Request(
     @SerializedName("headers") val headers: List<Header>,
     @SerializedName("queryString") val queryString: List<QueryString>,
     @SerializedName("postData") val postData: PostData?,
-    @SerializedName("headersSize") val headersSize: Int,
-    @SerializedName("bodySize") val bodySize: Long
+    @SerializedName("headersSize") val headersSize: Int = -1,
+    @SerializedName("bodySize") val bodySize: Long = -1,
+    @SerializedName("comment") val comment: String? = null
 ) {
     companion object {
         fun fromHttpTransaction(transaction: HttpTransaction): Request? {
@@ -28,7 +32,6 @@ internal data class Request(
                 headers = transaction.getParsedRequestHeaders()?.map { Header(it.name, it.value) }
                     ?: emptyList(),
                 queryString = QueryString.fromUrl(transaction.url!!.toHttpUrl()),
-//                queryString = QueryString.fromUrl(HttpUrl.get(transaction.url ?: "")),
                 postData = PostData.requestPostData(transaction),
                 headersSize = transaction.requestHeaders?.length ?: 0,
                 bodySize = transaction.requestPayloadSize ?: 0
