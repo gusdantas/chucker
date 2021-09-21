@@ -134,23 +134,27 @@ internal class MainActivity :
         return true
     }
 
-    private fun exportTransactions(fileName: String, block: (List<HttpTransaction>) -> Sharable) = lifecycleScope.launch {
-        val transactions = viewModel.getAllTransactions()
-        if (transactions.isNullOrEmpty()) {
-            Toast.makeText(this@MainActivity, R.string.chucker_export_empty_text, Toast.LENGTH_SHORT).show()
-            return@launch
-        }
+    private fun exportTransactions(fileName: String, block: (List<HttpTransaction>) -> Sharable) {
+        lifecycleScope.launch {
+            val transactions = viewModel.getAllTransactions()
+            if (transactions.isNullOrEmpty()) {
+                Toast
+                    .makeText(this@MainActivity, R.string.chucker_export_empty_text, Toast.LENGTH_SHORT)
+                    .show()
+                return@launch
+            }
 
-        val sharableTransactions = block(transactions)
-        val shareIntent = sharableTransactions.shareAsFile(
-            activity = this@MainActivity,
-            fileName = fileName,
-            intentTitle = getString(R.string.chucker_share_all_transactions_title),
-            intentSubject = getString(R.string.chucker_share_all_transactions_subject),
-            clipDataLabel = "transactions"
-        )
-        if (shareIntent != null) {
-            startActivity(shareIntent)
+            val sharableTransactions = block(transactions)
+            val shareIntent = sharableTransactions.shareAsFile(
+                activity = this@MainActivity,
+                fileName = fileName,
+                intentTitle = getString(R.string.chucker_share_all_transactions_title),
+                intentSubject = getString(R.string.chucker_share_all_transactions_subject),
+                clipDataLabel = "transactions"
+            )
+            if (shareIntent != null) {
+                startActivity(shareIntent)
+            }
         }
     }
 

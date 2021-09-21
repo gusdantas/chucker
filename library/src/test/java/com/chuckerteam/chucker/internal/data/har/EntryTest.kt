@@ -15,7 +15,7 @@ internal class EntryTest {
     @Test
     fun fromHttpTransaction_createsEntryWithCorrectStartedDateTime() {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        val entry = Entry.fromHttpTransaction(transaction)
+        val entry = Entry(transaction)
 
         assertThat(Entry.DateFormat.get()!!.parse(entry.startedDateTime)).isEqualTo(Date(transaction.requestDate!!))
         assertThat(entry.time).isEqualTo(1000)
@@ -24,7 +24,7 @@ internal class EntryTest {
     @Test
     fun fromHttpTransaction_createsEntryWithCorrectTime() {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        val entry = Entry.fromHttpTransaction(transaction)
+        val entry = Entry(transaction)
 
         assertThat(entry.time).isEqualTo(1000)
     }
@@ -32,7 +32,7 @@ internal class EntryTest {
     @Test
     fun fromHttpTransaction_createsEntryWithCorrectRequest() {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        val entry = Entry.fromHttpTransaction(transaction)
+        val entry = Entry(transaction)
 
         assertThat(entry.request).isEqualTo(
             Request(
@@ -43,7 +43,7 @@ internal class EntryTest {
                 headers = emptyList(),
                 queryString = emptyList(),
                 postData = PostData(mimeType = "application/json", params = null, text = ""),
-                headersSize = 0,
+                headersSize = -1,
                 bodySize = 1000
             )
         )
@@ -52,7 +52,7 @@ internal class EntryTest {
     @Test
     fun fromHttpTransaction_createsEntryWithCorrectResponse() {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        val entry = Entry.fromHttpTransaction(transaction)
+        val entry = Entry(transaction)
 
         assertThat(entry.response).isEqualTo(
             Response(
@@ -69,7 +69,7 @@ internal class EntryTest {
                     encoding = null
                 ),
                 redirectUrl = "",
-                headersSize = 0,
+                headersSize = -1,
                 bodySize = 1000
             )
         )
@@ -78,8 +78,8 @@ internal class EntryTest {
     @Test
     fun fromHttpTransaction_createsEntryWithCorrectTimings() {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        val entry = Entry.fromHttpTransaction(transaction)
+        val entry = Entry(transaction)
 
-        assertThat(entry.timings).isEqualTo(Timings.fromHttpTransaction(transaction))
+        assertThat(entry.timings).isEqualTo(Timings(transaction))
     }
 }

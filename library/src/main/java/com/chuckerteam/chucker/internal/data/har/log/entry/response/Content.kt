@@ -14,6 +14,7 @@ internal data class Content(
 ) {
     companion object {
         fun responseContent(transaction: HttpTransaction): Content? {
+            // todo gustavo: por que?
             if (transaction.responsePayloadSize == null || transaction.isResponseBodyEncoded) return null
 
             return Content(

@@ -7,4 +7,7 @@ internal data class Browser(
     @SerializedName("name") val name: String,
     @SerializedName("version") val version: String,
     @SerializedName("comment") val comment: String? = null
-)
+) {
+//    todo gustavo: constructor
+//    constructor(transaction: HttpTransaction) : this()
+}

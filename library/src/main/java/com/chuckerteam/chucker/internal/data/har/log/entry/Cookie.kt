@@ -12,4 +12,7 @@ internal data class Cookie(
     @SerializedName("httpOnly") val httpOnly: Boolean?,
     @SerializedName("secure") val secure: Boolean?,
     @SerializedName("comment") val comment: String? = null
-)
+) {
+//    todo constructor
+//    constructor(transaction: HttpTransaction) : this()
+}

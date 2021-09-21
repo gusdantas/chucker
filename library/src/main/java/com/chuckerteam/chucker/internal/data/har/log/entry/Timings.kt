@@ -14,15 +14,13 @@ internal data class Timings(
     @SerializedName("ssl") val ssl: Long? = -1,
     @SerializedName("comment") val comment: String? = null
 ) {
-    companion object {
-        fun fromHttpTransaction(transaction: HttpTransaction) = Timings(
-            blocked = null,
-            dns = null,
-            connect = null,
-            send = 0,
-            wait = 0,
-            receive = transaction.tookMs ?: 0,
-            ssl = null
-        )
-    }
+    constructor(transaction: HttpTransaction) : this(
+        blocked = null,
+        dns = null,
+        connect = null,
+        send = 0,
+        wait = 0,
+        receive = transaction.tookMs ?: 0,
+        ssl = null
+    )
 }

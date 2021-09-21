@@ -7,4 +7,7 @@ internal data class PageTimings(
     @SerializedName("onContentLoad") val onContentLoad: Long? = -1,
     @SerializedName("onLoad") val onLoad: Long? = -1,
     @SerializedName("comment") val comment: String? = null
-)
+) {
+    //    todo constructor
+//    constructor(transaction: HttpTransaction) : this()
+}

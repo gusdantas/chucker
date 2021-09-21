@@ -14,8 +14,8 @@ internal class HarUtilsTest {
         val postTransaction = TestTransactionFactory.createTransaction("POST")
         val har = HarUtils.fromHttpTransactions(listOf(getTransaction, postTransaction))
         assertThat(har.log.entries).hasSize(2)
-        assertThat(har.log.entries[0].request!!.method).isEqualTo("GET")
-        assertThat(har.log.entries[1].request!!.method).isEqualTo("POST")
+        assertThat(har.log.entries[0].request.method).isEqualTo("GET")
+        assertThat(har.log.entries[1].request.method).isEqualTo("POST")
     }
 
     @Test
@@ -46,7 +46,7 @@ internal class HarUtilsTest {
                             "mimeType": "application/json",
                             "text": ""
                           },
-                          "headersSize": 0,
+                          "headersSize": -1,
                           "bodySize": 1000
                         },
                         "response": {
@@ -61,7 +61,7 @@ internal class HarUtilsTest {
                             "text": "{\"field\": \"value\"}"
                           },
                           "redirectURL": "",
-                          "headersSize": 0,
+                          "headersSize": -1,
                           "bodySize": 1000
                         },
                         "cache": {},

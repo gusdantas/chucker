@@ -1,5 +1,6 @@
 package com.chuckerteam.chucker.internal.data.har
 
+import com.chuckerteam.chucker.internal.data.entity.HttpTransaction
 import com.chuckerteam.chucker.internal.data.har.log.Browser
 import com.chuckerteam.chucker.internal.data.har.log.Creator
 import com.chuckerteam.chucker.internal.data.har.log.Entry
@@ -8,10 +9,20 @@ import com.google.gson.annotations.SerializedName
 
 // https://github.com/ahmadnassri/har-spec/blob/master/versions/1.2.md#log
 internal data class Log(
-    @SerializedName("version") val version: String = "1.2",
+    @SerializedName("version") val version: String,
     @SerializedName("creator") val creator: Creator,
     @SerializedName("browser") val browser: Browser?,
     @SerializedName("pages") val pages: List<Page>?,
     @SerializedName("entries") val entries: List<Entry>,
     @SerializedName("comment") val comment: String? = null,
-)
+) {
+    constructor(transactions: List<HttpTransaction>) : this(
+        version = "1.2",
+        creator = Creator(),
+        browser = null,
+        pages = null,
+        entries = transactions
+            .filter { it.requestDate != null && it.responseDate != null }
+            .map { Entry(it) }
+    )
+}

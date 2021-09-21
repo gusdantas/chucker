@@ -10,4 +10,7 @@ internal data class Page(
     @SerializedName("title") val title: String,
     @SerializedName("pageTimings") val pageTimings: PageTimings,
     @SerializedName("comment") val comment: String? = null
-)
+) {
+//    todo constructor
+//    constructor(transaction: HttpTransaction) : this()
+}

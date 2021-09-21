@@ -15,27 +15,19 @@ internal data class Request(
     @SerializedName("headers") val headers: List<Header>,
     @SerializedName("queryString") val queryString: List<QueryString>,
     @SerializedName("postData") val postData: PostData?,
-    @SerializedName("headersSize") val headersSize: Int = -1,
-    @SerializedName("bodySize") val bodySize: Long = -1,
+    @SerializedName("headersSize") val headersSize: Int,
+    @SerializedName("bodySize") val bodySize: Long,
     @SerializedName("comment") val comment: String? = null
 ) {
-    companion object {
-        fun fromHttpTransaction(transaction: HttpTransaction): Request? {
-            if (transaction.requestDate == null) {
-                return null
-            }
-            return Request(
-                method = transaction.method ?: "",
-                url = transaction.url ?: "",
-                httpVersion = transaction.protocol ?: "",
-                cookies = emptyList(),
-                headers = transaction.getParsedRequestHeaders()?.map { Header(it.name, it.value) }
-                    ?: emptyList(),
-                queryString = QueryString.fromUrl(transaction.url!!.toHttpUrl()),
-                postData = PostData.requestPostData(transaction),
-                headersSize = transaction.requestHeaders?.length ?: 0,
-                bodySize = transaction.requestPayloadSize ?: 0
-            )
-        }
-    }
+    constructor(transaction: HttpTransaction) : this(
+        method = transaction.method ?: "",
+        url = transaction.url ?: "",
+        httpVersion = transaction.protocol ?: "",
+        cookies = emptyList(),
+        headers = transaction.getParsedRequestHeaders()?.map { Header(it) } ?: emptyList(),
+        queryString = QueryString.fromUrl(transaction.url!!.toHttpUrl()),
+        postData = PostData.requestPostData(transaction),
+        headersSize = transaction.requestHeaders?.length ?: -1,
+        bodySize = transaction.requestPayloadSize ?: -1
+    )
 }

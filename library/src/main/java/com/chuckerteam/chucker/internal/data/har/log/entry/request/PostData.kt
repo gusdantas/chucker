@@ -14,6 +14,7 @@ internal data class PostData(
 ) {
     companion object {
         fun requestPostData(transaction: HttpTransaction): PostData? {
+            // todo gustavo: por que?
             if (transaction.requestPayloadSize == null || transaction.isResponseBodyEncoded) return null
             return PostData(
                 mimeType = transaction.requestContentType ?: "text",

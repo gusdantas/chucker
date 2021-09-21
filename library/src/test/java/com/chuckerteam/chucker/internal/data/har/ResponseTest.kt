@@ -10,33 +10,33 @@ internal class ResponseTest {
     @Test
     fun fromHttpTransaction_createsResponseWithCorrectStatus() {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        val response = Response.fromHttpTransaction(transaction)
+        val response = Response(transaction)
 
-        assertThat(response?.status).isEqualTo(200)
+        assertThat(response.status).isEqualTo(200)
     }
 
     @Test
     fun fromHttpTransaction_createsResponseWithCorrectStatusText() {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        val response = Response.fromHttpTransaction(transaction)
+        val response = Response(transaction)
 
-        assertThat(response?.statusText).isEqualTo("OK")
+        assertThat(response.statusText).isEqualTo("OK")
     }
 
     @Test
     fun fromHttpTransaction_createsResponseWithCorrectHttpVersion() {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        val response = Response.fromHttpTransaction(transaction)
+        val response = Response(transaction)
 
-        assertThat(response?.httpVersion).isEqualTo("HTTP")
+        assertThat(response.httpVersion).isEqualTo("HTTP")
     }
 
     @Test
     fun fromHttpTransaction_createsResponseWithCorrectContent() {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        val response = Response.fromHttpTransaction(transaction)
+        val response = Response(transaction)
 
-        assertThat(response?.content).isEqualTo(
+        assertThat(response.content).isEqualTo(
             Content(
                 size = 1000,
                 compression = null,
@@ -50,8 +50,8 @@ internal class ResponseTest {
     @Test
     fun fromHttpTransaction_createsResponseWithCorrectBodySize() {
         val transaction = TestTransactionFactory.createTransaction("GET")
-        val response = Response.fromHttpTransaction(transaction)
+        val response = Response(transaction)
 
-        assertThat(response?.bodySize).isEqualTo(1000)
+        assertThat(response.bodySize).isEqualTo(1000)
     }
 }
