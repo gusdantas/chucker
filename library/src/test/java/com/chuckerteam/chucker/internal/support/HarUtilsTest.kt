@@ -22,6 +22,7 @@ internal class HarUtilsTest {
     fun harString_createsJsonString(): Unit = runBlocking {
         val transaction = TestTransactionFactory.createTransaction("GET")
         val result = HarUtils.harStringFromTransactions(listOf(transaction))
+        val startedDateTime = Entry.DateFormat.get()!!.format(Date(transaction.requestDate!!))
         assertThat(result).isEqualTo(
             """
                 {
@@ -33,7 +34,7 @@ internal class HarUtilsTest {
                     },
                     "entries": [
                       {
-                        "startedDateTime": "${Entry.DateFormat.get()!!.format(Date(transaction.requestDate!!))}",
+                        "startedDateTime": "$startedDateTime",
                         "time": 1000,
                         "request": {
                           "method": "GET",

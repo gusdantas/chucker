@@ -34,15 +34,6 @@ internal class MainViewModel : ViewModel() {
 
     suspend fun getAllTransactions(): List<HttpTransaction> = RepositoryProvider.transaction().getAllTransactions()
 
-/*
-
-    val throwables: LiveData<List<RecordedThrowableTuple>> = RepositoryProvider.throwable()
-        .getSortedThrowablesTuples()
-
-    suspend fun getAllTransactions(): List<HttpTransaction>? = RepositoryProvider.transaction().getAllTransactions()
-
-*/
-
     fun updateItemsFilter(searchQuery: String) {
         currentFilter.value = searchQuery
     }
