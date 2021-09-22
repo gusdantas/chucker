@@ -43,11 +43,11 @@ internal class HarUtilsTest {
                           "headers": [],
                           "queryString": [],
                           "postData": {
-                            "mimeType": "application/json",
-                            "text": ""
+                            "mimeType": "application/json"
                           },
                           "headersSize": -1,
-                          "bodySize": 1000
+                          "bodySize": 1000,
+                          "totalSize": 1000
                         },
                         "response": {
                           "status": 200,
@@ -62,13 +62,18 @@ internal class HarUtilsTest {
                           },
                           "redirectURL": "",
                           "headersSize": -1,
-                          "bodySize": 1000
+                          "bodySize": 1000,
+                          "totalSize": 1000
                         },
                         "cache": {},
                         "timings": {
+                          "blocked": -1,
+                          "dns": -1,
+                          "connect": -1,
                           "send": 0,
                           "wait": 0,
-                          "receive": 1000
+                          "receive": 1000,
+                          "ssl": -1
                         }
                       }
                     ]

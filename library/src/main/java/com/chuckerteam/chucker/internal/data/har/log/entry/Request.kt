@@ -5,6 +5,7 @@ import com.chuckerteam.chucker.internal.data.har.log.entry.request.PostData
 import com.chuckerteam.chucker.internal.data.har.log.entry.request.QueryString
 import com.google.gson.annotations.SerializedName
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import kotlin.math.max
 
 // https://github.com/ahmadnassri/har-spec/blob/master/versions/1.2.md#request
 internal data class Request(
@@ -17,6 +18,7 @@ internal data class Request(
     @SerializedName("postData") val postData: PostData?,
     @SerializedName("headersSize") val headersSize: Int,
     @SerializedName("bodySize") val bodySize: Long,
+    @SerializedName("totalSize") var totalSize: Long,
     @SerializedName("comment") val comment: String? = null
 ) {
     constructor(transaction: HttpTransaction) : this(
@@ -26,8 +28,11 @@ internal data class Request(
         cookies = emptyList(),
         headers = transaction.getParsedRequestHeaders()?.map { Header(it) } ?: emptyList(),
         queryString = QueryString.fromUrl(transaction.url!!.toHttpUrl()),
-        postData = PostData.requestPostData(transaction),
+        postData = if (transaction.requestPayloadSize == null) null else PostData(transaction),
         headersSize = transaction.requestHeaders?.length ?: -1,
-        bodySize = transaction.requestPayloadSize ?: -1
-    )
+        bodySize = transaction.requestPayloadSize ?: -1,
+        totalSize = -1
+    ) {
+        totalSize = max(0, headersSize) + max(0, bodySize)
+    }
 }

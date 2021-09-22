@@ -4,6 +4,7 @@ import com.chuckerteam.chucker.internal.data.entity.HttpTransaction
 import com.chuckerteam.chucker.internal.data.har.log.entry.response.Content
 import com.google.gson.annotations.SerializedName
 import java.net.HttpURLConnection
+import kotlin.math.max
 
 // https://github.com/ahmadnassri/har-spec/blob/master/versions/1.2.md#response
 internal data class Response(
@@ -16,6 +17,7 @@ internal data class Response(
     @SerializedName("redirectURL") val redirectUrl: String,
     @SerializedName("headersSize") val headersSize: Int,
     @SerializedName("bodySize") val bodySize: Long,
+    @SerializedName("totalSize") var totalSize: Long,
     @SerializedName("comment") val comment: String? = null
 ) {
     constructor(transaction: HttpTransaction) : this(
@@ -24,10 +26,13 @@ internal data class Response(
         httpVersion = transaction.protocol ?: "",
         cookies = emptyList(),
         headers = transaction.getParsedResponseHeaders()?.map { Header(it) } ?: emptyList(),
-        content = Content.responseContent(transaction),
+        content = if (transaction.responsePayloadSize == null) null else Content(transaction),
         redirectUrl = "",
         headersSize = transaction.responseHeaders?.length ?: -1,
         bodySize = if (transaction.responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) 0
-        else transaction.responsePayloadSize ?: -1
-    )
+        else transaction.responsePayloadSize ?: -1,
+        totalSize = -1
+    ) {
+        totalSize = max(0, headersSize) + max(0, bodySize)
+    }
 }

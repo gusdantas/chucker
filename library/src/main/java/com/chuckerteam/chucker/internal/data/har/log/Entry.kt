@@ -15,7 +15,7 @@ import java.util.Locale
 internal data class Entry(
     @SerializedName("pageref") val pageref: String?,
     @SerializedName("startedDateTime") val startedDateTime: String,
-    @SerializedName("time") val time: Long,
+    @SerializedName("time") var time: Long,
     @SerializedName("request") val request: Request,
     @SerializedName("response") val response: Response,
     @SerializedName("cache") val cache: Cache,
@@ -27,14 +27,16 @@ internal data class Entry(
     constructor(transaction: HttpTransaction) : this(
         pageref = null,
         startedDateTime = transaction.requestDate.harFormatted(),
-        time = transaction.tookMs ?: 0,
+        time = -1,
         request = Request(transaction),
         response = Response(transaction),
         cache = Cache(),
         timings = Timings(transaction),
         serverIPAddress = null,
         connection = null
-    )
+    ) {
+        time = timings.getTime()
+    }
 
     @VisibleForTesting
     object DateFormat : ThreadLocal<SimpleDateFormat>() {

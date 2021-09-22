@@ -42,9 +42,10 @@ internal class EntryTest {
                 cookies = emptyList(),
                 headers = emptyList(),
                 queryString = emptyList(),
-                postData = PostData(mimeType = "application/json", params = null, text = ""),
+                postData = PostData(mimeType = "application/json", params = null, text = null),
                 headersSize = -1,
-                bodySize = 1000
+                bodySize = 1000,
+                totalSize = 1000
             )
         )
     }
@@ -70,7 +71,8 @@ internal class EntryTest {
                 ),
                 redirectUrl = "",
                 headersSize = -1,
-                bodySize = 1000
+                bodySize = 1000,
+                totalSize = 1000
             )
         )
     }

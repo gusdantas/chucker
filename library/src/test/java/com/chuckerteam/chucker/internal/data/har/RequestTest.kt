@@ -37,7 +37,7 @@ internal class RequestTest {
         val request = Request(transaction)
 
         assertThat(request.postData)
-            .isEqualTo(PostData(mimeType = "application/json", params = null, text = ""))
+            .isEqualTo(PostData(mimeType = "application/json", params = null, text = null))
     }
 
     @Test
